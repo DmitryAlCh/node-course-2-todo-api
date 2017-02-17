@@ -62,6 +62,26 @@ app.get('/todos/:id', (req, res) => {
 
 });
 
+app.delete('/todos/:id', (req, res) => {
+  // get the ID
+  var id = req.params.id;
+  // Validate the ID  (404)
+  if (!ObjectID.isValid(id)){
+    return res.status(404).send();
+  }
+
+  // remove by ID
+  Todo.findByIdAndRemove(id).then((success_doc) => {
+    if (!success_doc){
+      return res.status(404).send();
+    }
+    res.status(200).send(success_doc);
+  }, (error) => {
+    res.status(400).send();
+  });
+});
+
+
 app.listen(port, ()=>{
   console.log(`Sarter up at port ${port}`);
 });
