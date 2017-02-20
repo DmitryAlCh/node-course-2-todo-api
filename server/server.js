@@ -75,7 +75,7 @@ app.delete('/todos/:id', (req, res) => {
     if (!success_doc){
       return res.status(404).send();
     }
-    res.status(200).send(success_doc);
+    res.status(200).send({todo:success_doc});
   }, (error) => {
     res.status(400).send();
   });
