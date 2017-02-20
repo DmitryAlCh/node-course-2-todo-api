@@ -109,6 +109,21 @@ app.patch('/todos/:id', (req, res) => {
 
 });
 
+// POST /Users
+
+app.post('/users', (req, res) => {
+  var pickedParts = _.pick(req.body, ['email', 'password']);
+  var user = new User({
+    email: pickedParts.email,
+    password: pickedParts.password
+  });
+
+  user.save().then((success) =>{
+    res.status(200).send(success);
+  }, (err) => {
+    res.status(400).send(err);
+  });
+});
 
 app.listen(port, ()=>{
   console.log(`Sarter up at port ${port}`);
