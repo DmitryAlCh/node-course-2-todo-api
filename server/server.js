@@ -118,11 +118,13 @@ app.post('/users', (req, res) => {
     password: pickedParts.password
   });
 
-  user.save().then((success) =>{
-    res.status(200).send(success);
-  }, (err) => {
+  user.save().then(() =>{
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((err) => {
     res.status(400).send(err);
-  });
+  })
 });
 
 app.listen(port, ()=>{
