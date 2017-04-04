@@ -306,3 +306,22 @@ describe('Post/users/login', () => {
 
 
 });
+
+describe('Delete /users/me/token', ()=>{
+  it('Should remove auth token on logout',(done)=>{
+
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .end((err, res) => {
+        if(err){
+          done(err);
+        }
+        User.findById(users[0]._id).then((user) => {
+            expect(user.tokens.length).toBe(0);
+            done();
+        }).catch((e)=>done(e));
+      });
+  });
+});
