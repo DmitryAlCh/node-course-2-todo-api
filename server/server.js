@@ -16,10 +16,11 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   console.log(req.body);
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id
   });
 
   todo.save().then(
@@ -32,8 +33,10 @@ app.post('/todos', (req, res) => {
   );
 });
 
-app.get('/todos', (req, res) => {
-  Todo.find().then((success) =>{
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((success) =>{
     res.send({todos:success});
   }, (err) =>{
     res.status(400).send(err);
@@ -41,7 +44,7 @@ app.get('/todos', (req, res) => {
 });
 
 //  GET /todos/123344
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
   // validate Id and respond 404 if id not valid.
   if (!ObjectID.isValid(id)){
@@ -51,7 +54,10 @@ app.get('/todos/:id', (req, res) => {
     // success
       // if todo = send it back
       // if no todo = 404 with empty body
-  Todo.findById(id).then((success) => {
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+  }).then((success) => {
     if(!success){
       return res.status(404).send();
     }
@@ -65,7 +71,7 @@ app.get('/todos/:id', (req, res) => {
 
 });
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   // get the ID
   var id = req.params.id;
   // Validate the ID  (404)
@@ -74,7 +80,10 @@ app.delete('/todos/:id', (req, res) => {
   }
 
   // remove by ID
-  Todo.findByIdAndRemove(id).then((success_doc) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+    }).then((success_doc) => {
     if (!success_doc){
       return res.status(404).send();
     }
@@ -84,7 +93,7 @@ app.delete('/todos/:id', (req, res) => {
   });
 });
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ['text','completed']);
   // .pick({object_to_pick_FROM}, [Array of propertys we take from object]);
@@ -98,7 +107,11 @@ app.patch('/todos/:id', (req, res) => {
     body.completed = false;
     body.completedAt = null;
   }
-    Todo.findByIdAndUpdate(id, {$set:body}, {new: true}).then( (todo) =>{
+    //findOneAndUpdate
+    Todo.findOneAndUpdate({
+      _id: id,
+      _creator: req.user._id
+    }, {$set:body}, {new: true}).then( (todo) =>{
       if (!todo){
         return res.status(404).send();
       }
@@ -157,7 +170,7 @@ app.delete('/users/me/token', authenticate, (req, res)=>{
 });
 
 app.listen(port, ()=>{
-  console.log(`Sarter up at port ${port}`);
+  console.log(`Sarted up at port ${port}`);
 });
 
 module.exports = {
