@@ -2,3 +2,4 @@ node_modules/*
 README.md
 npm-debug.log
 *.csv
+server/config/config.json
